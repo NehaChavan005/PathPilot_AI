@@ -1,0 +1,12 @@
+.auth-bubbles-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-bubbles-canvas {
+    display: none;
+  }
+}
