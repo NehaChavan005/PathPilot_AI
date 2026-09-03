@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
 from app.api.profile import router as profile_router
+from app.api.career import router as career_router
 
 
 app = FastAPI(
@@ -21,10 +22,14 @@ app.include_router(
     prefix="/api"
 )
 
+app.include_router(
+    career_router,
+    prefix="/api"
+)
+
 
 @app.get("/")
 def root():
     return {
-        "message": "PathPilot AI backend is running",
-        "authentication": "temporarily disabled"
+        "message": "PathPilot AI backend is running"
     }
