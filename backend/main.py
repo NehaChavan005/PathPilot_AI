@@ -1,6 +1,16 @@
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+
+# Ensure the repo root (F:\PathPilot_AI) is importable so the
+# ``backend.app`` package resolves regardless of the launch directory.
+BACKEND_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BACKEND_DIR.parent
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from backend.app.api.auth import router as auth_router
 from backend.app.api.profile import router as profile_router
