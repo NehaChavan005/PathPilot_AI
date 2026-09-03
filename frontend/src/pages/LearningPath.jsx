@@ -1,68 +1,83 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLearnerProfile } from '../context/LearnerProfileCtx';
+import { generateRoadmap } from '../utils/roadmapEngine';
 import RoadmapTimeline from '../components/learning/RoadmapTimeline';
 
 const LearningPath = () => {
-  // Complete AI/ML Engineer Curriculum with sequential video resources
-  const phases = [
-    { 
-      id: 1, 
-      phase: "Phase 1", 
-      title: "Python & Applied Mathematics", 
-      status: "Completed", 
-      duration: "4 Weeks", 
-      skills: ["Python", "Linear Algebra", "Calculus", "Pandas"],
-      resources: [
-        { title: "Python for Beginners - Full Course", channel: "Programming with Mosh", url: "https://www.youtube.com/watch?v=_uQrJ0TkZlc", duration: "6 hrs" },
-        { title: "Essence of Linear Algebra", channel: "3Blue1Brown", url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab", duration: "Playlist" }
-      ]
-    },
-    { 
-      id: 2, 
-      phase: "Phase 2", 
-      title: "Machine Learning Fundamentals", 
-      status: "In Progress", 
-      duration: "6 Weeks", 
-      progress: 65, 
-      skills: ["Scikit-Learn", "Regression", "Classification", "EDA"],
-      resources: [
-        { title: "Machine Learning for Everybody", channel: "freeCodeCamp", url: "https://www.youtube.com/watch?v=i_LwzRmA_08", duration: "3.5 hrs" },
-        { title: "StatQuest: Machine Learning Intro", channel: "StatQuest with Josh Starmer", url: "https://www.youtube.com/watch?v=Gv9_4yMHFhI", duration: "Playlist" }
-      ]
-    },
-    { 
-      id: 3, 
-      phase: "Phase 3", 
-      title: "Deep Learning & Neural Networks", 
-      status: "Locked", 
-      duration: "8 Weeks", 
-      skills: ["TensorFlow", "Keras", "CNNs", "Computer Vision"],
-      resources: [
-        { title: "Neural Networks / Deep Learning", channel: "3Blue1Brown", url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi", duration: "Playlist" },
-        { title: "TensorFlow 2.0 Complete Course", channel: "freeCodeCamp", url: "https://www.youtube.com/watch?v=tPYj3fFJGjk", duration: "7 hrs" }
-      ]
-    },
-    { 
-      id: 4, 
-      phase: "Phase 4", 
-      title: "Full-Stack AI Deployment", 
-      status: "Locked", 
-      duration: "4 Weeks", 
-      skills: ["Streamlit", "Flask API", "Model Serving", "Git"],
-      resources: [
-        { title: "Build a Machine Learning Web App with Streamlit", channel: "Data Professor", url: "https://www.youtube.com/watch?v=ZZ4B0ZUvs5E", duration: "45 min" },
-        { title: "Deploy ML Models using Flask", channel: "Ken Jee", url: "https://www.youtube.com/watch?v=bA7-DEtYCNM", duration: "1 hr" }
-      ]
-    }
-  ];
+  const navigate = useNavigate();
+  const { profile } = useLearnerProfile();
+
+  const roadmap = useMemo(() => generateRoadmap(profile), [profile]);
+
+  const phases = useMemo(() => {
+    if (!roadmap) return [];
+
+    return roadmap.phases.map((phase, idx) => {
+      let status = 'Locked';
+      if (idx === 0) status = 'In Progress';
+      if (profile.progress?.completedPhases?.includes(phase.id)) status = 'Completed';
+
+      const progress = profile.progress?.phaseProgress?.[phase.id] || 0;
+
+      return {
+        ...phase,
+        status,
+        progress: status === 'In Progress' ? Math.max(10, progress) : undefined,
+        skills: phase.skills || [],
+        resources: (phase.courses || []).map(c => ({
+          title: c.title,
+          channel: c.domain,
+          url: '#',
+          duration: c.duration
+        }))
+      };
+    });
+  }, [roadmap, profile.progress]);
+
+  if (!roadmap || phases.length === 0) {
+    return (
+      <div className="p-4 md:p-8 max-w-4xl mx-auto min-h-screen font-sans animate-in fade-in duration-500">
+        <div className="bg-white rounded-[2rem] p-12 shadow-sm border border-slate-200 text-center">
+          <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-3xl mx-auto flex items-center justify-center text-3xl mb-6 shadow-sm">
+            🗺️
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 mb-4">No Roadmap Yet</h1>
+          <p className="text-slate-500 font-medium text-sm mb-8 max-w-md mx-auto">
+            Complete your onboarding to generate a personalized learning roadmap tailored to your goals.
+          </p>
+          <button 
+            onClick={() => navigate('/onboarding')}
+            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
+          >
+            Start Onboarding
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto min-h-screen font-sans animate-in fade-in duration-500">
       <div className="bg-white rounded-[2rem] p-8 mb-8 shadow-sm border border-slate-200">
-        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-lg uppercase tracking-widest mb-4 inline-block">Dynamic Roadmap</span>
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight">AI/ML Engineer</h1>
+        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-lg uppercase tracking-widest mb-4 inline-block">Personalized Roadmap</span>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight">{profile.careerGoal || profile.selectedStream}</h1>
         <p className="text-slate-500 font-medium text-sm mt-2 max-w-2xl">
-          A structured sequence from foundational mathematics to deploying live deep learning models via Flask and Streamlit.
+          A {roadmap.totalWeeks}-week learning path for {profile.selectedStream}
+          {profile.selectedDomains?.length > 0 ? ` focusing on ${profile.selectedDomains.join(', ')}` : ''}.
+          Based on your {profile.dailyStudyMinutes} min/day, {profile.studyDays?.length || 0} days/week schedule.
         </p>
+        <div className="flex flex-wrap gap-4 mt-4">
+          <div className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+            📅 {profile.targetMonths} months
+          </div>
+          <div className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+            ⏱️ {profile.dailyStudyMinutes} min/day
+          </div>
+          <div className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+            📆 {profile.studyDays?.length || 0} days/week
+          </div>
+        </div>
       </div>
       
       <RoadmapTimeline phases={phases} />

@@ -4,12 +4,12 @@ import { Link, useLocation } from 'react-router-dom';
 const Sidebar = () => {
   const { pathname } = useLocation();
   
-  // Cleaned labels without emojis for a professional look
   const links = [
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/profile', label: 'My Profile' },
-    { path: '/career', label: 'Career Path' },
+    { path: '/courses', label: 'All Courses' },
     { path: '/learning', label: 'Learning Path' },
+    { path: '/career', label: 'Career Path' },
     { path: '/roleplay', label: 'AI Role Play' },
     { path: '/certifications', label: 'Certifications' },
     { path: '/analytics', label: 'Skill Analytics' }

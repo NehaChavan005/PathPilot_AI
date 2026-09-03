@@ -20,6 +20,7 @@ import LearningPath from './pages/LearningPath';
 import AIRolePlay from './pages/AIRolePlay';
 import Certifications from './pages/Certifications';
 import SkillAnalytics from './pages/SkillAnalytics';
+import AllCourses from './pages/AllCourses';
 
 const App = () => {
   return (
@@ -42,6 +43,7 @@ const App = () => {
               <Route path="/roleplay" element={<AIRolePlay />} />
               <Route path="/certifications" element={<Certifications />} />
               <Route path="/analytics" element={<SkillAnalytics />} />
+              <Route path="/courses" element={<AllCourses />} />
             </Route>
             
           </Routes>

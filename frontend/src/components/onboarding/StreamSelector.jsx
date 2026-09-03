@@ -3,7 +3,7 @@ import React from 'react';
 const StreamSelector = ({ selectedStream, onSelect }) => {
   const streams = [
     { id: 'AI & ML', icon: '🤖', desc: 'Deep Learning & Neural Networks' },
-    { id: 'AI & DS', icon: '📊', desc: 'Data Analytics & Statistics' },
+    { id: 'AI & Data Science', icon: '📊', desc: 'Data Analytics & Statistics' },
     { id: 'Computer Science', icon: '💻', desc: 'Full-Stack & Systems' }
   ];
 

@@ -4,12 +4,14 @@ import AuthHeroCard from './AuthHeroCard';
 import FloatingBubbles from './FloatingBubbles';
 import Field from './Field';
 import { useAuth } from '../../context/AuthContext';
+import { useLearnerProfile } from '../../context/LearnerProfileCtx';
 import './auth-split.css';
 import './AuthForms.css';
 
 const AuthPage = ({ initialMode = 'register' }) => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { profile, updateProfile } = useLearnerProfile();
   const [mode, setMode] = useState(initialMode);
   const [transitioning, setTransitioning] = useState(false);
   const [displayMode, setDisplayMode] = useState(initialMode);
@@ -74,12 +76,20 @@ const AuthPage = ({ initialMode = 'register' }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    login({ name: 'Omkar', email: loginData.email });
-    navigate('/dashboard');
+    login({ name: profile.name || 'User', email: loginData.email });
+    if (profile.onboardingComplete) {
+      navigate('/dashboard');
+    } else {
+      navigate('/onboarding');
+    }
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
+    if (registerData.name) {
+      updateProfile('name', registerData.name);
+    }
+    login({ name: registerData.name, email: registerData.email });
     navigate('/onboarding');
   };
 
