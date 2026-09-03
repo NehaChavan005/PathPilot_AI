@@ -1,7 +1,29 @@
-from .base import Base
-from .connection import engine
-from app.models import assessment, course, profile, progress, recommendation, roadmap, skill, user  # noqa: F401
+from app.database.base import Base
+from app.database.connection import engine
+
+# Import all models so SQLAlchemy knows about every table.
+from app.models import (
+    User,
+    LearnerProfile,
+    Skill,
+    LearnerSkill,
+    Prerequisite,
+    Course,
+    CourseSkill,
+    Enrollment,
+    Progress,
+    Assessment,
+    AssessmentResult,
+    Recommendation,
+    LearningPath,
+    RoadmapItem,
+)
 
 
-def create_tables() -> None:
+def init_db():
     Base.metadata.create_all(bind=engine)
+
+
+if __name__ == "__main__":
+    init_db()
+    print("PathPilot database initialized successfully.")

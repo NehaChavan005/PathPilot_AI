@@ -1,10 +1,25 @@
-from .user import User
-from .profile import Profile
-from .skill import Skill
-from .course import Course
-from .progress import Progress
-from .assessment import Assessment
-from .recommendation import Recommendation
-from .roadmap import Roadmap
+from app.models.user import User
+from app.models.profile import LearnerProfile
+from app.models.skill import Skill, LearnerSkill
+from app.models.course import Course, CourseSkill
+from app.models.progress import Enrollment, Progress
+from app.models.assessment import Assessment, AssessmentResult
+from app.models.recommendation import Recommendation
+from app.models.roadmap import LearningPath, RoadmapItem
 
-__all__ = ["User", "Profile", "Skill", "Course", "Progress", "Assessment", "Recommendation", "Roadmap"]
+
+__all__ = [
+    "User",
+    "LearnerProfile",
+    "Skill",
+    "LearnerSkill",
+    "Course",
+    "CourseSkill",
+    "Enrollment",
+    "Progress",
+    "Assessment",
+    "AssessmentResult",
+    "Recommendation",
+    "LearningPath",
+    "RoadmapItem",
+]
