@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from backend.app.database.connection import SessionLocal
-from backend.app.models import (
+from app.database.connection import SessionLocal
+from app.models import (
     User,
     LearnerProfile,
     Skill,
@@ -831,3 +831,5 @@ def seed_database():
 
 if __name__ == "__main__":
     seed_database()
+
+

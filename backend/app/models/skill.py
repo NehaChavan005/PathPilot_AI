@@ -1,7 +1,7 @@
 from sqlalchemy import Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.app.database.base import Base
+from app.database.base import Base
 
 
 class Skill(Base):
@@ -125,3 +125,5 @@ class Prerequisite(Base):
         "Skill",
         foreign_keys=[prerequisite_skill_id],
     )
+
+

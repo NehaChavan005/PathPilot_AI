@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.app.models.assessment import AssessmentResult
-from backend.app.models.course import Course
-from backend.app.models.progress import (
+from app.models.assessment import AssessmentResult
+from app.models.course import Course
+from app.models.progress import (
     Enrollment,
     Progress,
     ProgressHistory,
@@ -274,3 +274,5 @@ def get_progress_history(
         }
         for item in history
     ]
+
+

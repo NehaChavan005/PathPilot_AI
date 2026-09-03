@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from backend.app.database.connection import get_db
-from backend.app.models.assessment import AssessmentResult
-from backend.app.models.course import Course
-from backend.app.models.progress import Enrollment, Progress
-from backend.app.models.user import User
-from backend.app.utils.dependencies import current_user
+from app.database.connection import get_db
+from app.models.assessment import AssessmentResult
+from app.models.course import Course
+from app.models.progress import Enrollment, Progress
+from app.models.user import User
+from app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -48,3 +48,5 @@ def dashboard(user: User = Depends(current_user), db: Session = Depends(get_db))
         "average_progress": average_progress,
         "assessments_taken": assessments_taken,
     }
+
+

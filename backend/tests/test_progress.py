@@ -6,13 +6,13 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.app.api.progress import router as progress_router
-from backend.app.database.base import Base
-from backend.app.database.connection import get_db
-from backend.app.models.assessment import Assessment, AssessmentResult
-from backend.app.models.course import Course
-from backend.app.models.skill import Skill
-from backend.app.models.user import User
+from app.api.progress import router as progress_router
+from app.database.base import Base
+from app.database.connection import get_db
+from app.models.assessment import Assessment, AssessmentResult
+from app.models.course import Course
+from app.models.skill import Skill
+from app.models.user import User
 
 TEST_DB_URL = "sqlite:///./test_progress.db"
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
@@ -27,12 +27,16 @@ def override_get_db():
         db.close()
 
 
-# Build an isolated app for these tests so we never interfere with other test
-# modules that override the shared `get_db` dependency on the main app.
-test_app = FastAPI()
-test_app.include_router(progress_router, prefix="/api")
-test_app.dependency_overrides[get_db] = override_get_db
-client = TestClient(test_app)
+from app.utils.dependencies import current_user
+
+
+def override_current_user():
+    db = TestingSessionLocal()
+    try:
+        user = db.query(User).filter_by(email="demo@pathpilot.ai").first()
+        return user
+    finally:
+        db.close()
 
 
 @pytest.fixture(autouse=True)
@@ -40,6 +44,15 @@ def setup_database():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+# Build an isolated app for these tests so we never interfere with other test
+# modules that override the shared `get_db` dependency on the main app.
+test_app = FastAPI()
+test_app.include_router(progress_router, prefix="/api")
+test_app.dependency_overrides[get_db] = override_get_db
+test_app.dependency_overrides[current_user] = override_current_user
+client = TestClient(test_app)
 
 
 def _seed(db):
@@ -309,7 +322,7 @@ def test_progress_history_chronological():
 
 
 def test_progress_user_isolation():
-    from backend.app.services import progress_service
+    from app.services import progress_service
 
     db = TestingSessionLocal()
     ids = _seed_two_users(db)

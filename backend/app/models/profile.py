@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.app.database.base import Base
+from app.database.base import Base
 
 
 class LearnerProfile(Base):
@@ -52,3 +52,5 @@ class LearnerProfile(Base):
         "User",
         back_populates="profile",
     )
+
+

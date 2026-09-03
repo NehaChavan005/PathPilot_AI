@@ -3,12 +3,12 @@ import json
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from backend.app.database.connection import get_db
-from backend.app.models.roadmap import LearningPath
-from backend.app.models.user import User
-from backend.app.schemas.roadmap import RoadmapCreate, RoadmapRead
-from backend.app.services.roadmap_service import create_roadmap
-from backend.app.utils.dependencies import current_user
+from app.database.connection import get_db
+from app.models.roadmap import LearningPath
+from app.models.user import User
+from app.schemas.roadmap import RoadmapCreate, RoadmapRead
+from app.services.roadmap_service import create_roadmap
+from app.utils.dependencies import current_user
 
 
 router = APIRouter(
@@ -61,3 +61,5 @@ def add_roadmap(
     )
 
     return serialize(roadmap)
+
+

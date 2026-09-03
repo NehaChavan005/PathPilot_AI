@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.app.models.skill import Prerequisite, Skill
-from backend.app.schemas.skill import (
+from app.models.skill import Prerequisite, Skill
+from app.schemas.skill import (
     GraphNodeData,
     GraphNodePosition,
     SkillGraphEdge,
@@ -227,3 +227,4 @@ def build_skill_graph(db: Session, career: str | None = None) -> SkillGraphRespo
     ]
 
     return _build_graph(skills, prerequisites)
+

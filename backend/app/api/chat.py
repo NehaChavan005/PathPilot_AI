@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-from backend.app.ai.chat_service import answer
-from backend.app.models.user import User
-from backend.app.utils.dependencies import current_user
+from app.ai.chat_service import answer
+from app.models.user import User
+from app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -14,3 +14,5 @@ class ChatRequest(BaseModel):
 @router.post("")
 def chat(payload: ChatRequest, user: User = Depends(current_user)):
     return {"reply": answer(payload.message, user.full_name)}
+
+

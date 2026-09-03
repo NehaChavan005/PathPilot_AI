@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from backend.app.services.feedback_service import feedback_received
+from app.services.feedback_service import feedback_received
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -12,3 +12,5 @@ class FeedbackRequest(BaseModel):
 @router.post("")
 def submit_feedback(payload: FeedbackRequest):
     return feedback_received(payload.message)
+
+
