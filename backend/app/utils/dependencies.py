@@ -1,31 +1,48 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from backend.app.database.connection import get_db
-from backend.app.models.user import User
+from app.database.connection import get_db
+from app.models.user import User
+from app.utils.security import decode_access_token
+
+
+bearer = HTTPBearer()
 
 
 def current_user(
-    db: Session = Depends(get_db)
-):
-    """
-    Temporary development user.
+    credentials: HTTPAuthorizationCredentials = Depends(bearer),
+    db: Session = Depends(get_db),
+) -> User:
 
-    JWT authentication is intentionally disabled for now.
-    """
+    payload = decode_access_token(credentials.credentials)
 
-    user = db.query(User).first()
+    if not payload or "sub" not in payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
 
-    if user:
-        return user
+    try:
+        user_id = int(payload["sub"])
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
 
-    user = User(
-        email="dev@pathpilot.local",
-        name="PathPilot Developer"
-    )
+    user = db.get(User, user_id)
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive",
+        )
 
     return user
