@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # JWT
     secret_key: str = "change-this-secret-key"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+    access_token_expire_minutes: int = 1440
 
     # LLM
     llm_provider: str = "mock"

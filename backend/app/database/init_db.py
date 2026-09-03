@@ -19,6 +19,7 @@ from backend.app.models import (
     LearningPath,
     RoadmapItem,
 )
+from backend.app.models import feedback
 
 
 def init_db():

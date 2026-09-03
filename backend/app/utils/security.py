@@ -1,7 +1,11 @@
+from datetime import datetime, timedelta, timezone
+
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+from backend.app.config.settings import settings
 
-# Password hashing
+
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
@@ -9,14 +13,41 @@ pwd_context = CryptContext(
 
 
 def hash_password(password: str) -> str:
-    """
-    Convert plain password into a secure hash.
-    """
     return pwd_context.hash(password)
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    """
-    Verify a plain password against its stored hash.
-    """
     return pwd_context.verify(password, password_hash)
+
+
+def create_access_token(
+    data: dict,
+    expires_delta: timedelta | None = None
+) -> str:
+    to_encode = data.copy()
+
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.access_token_expire_minutes
+        )
+
+    to_encode.update({"exp": expire})
+
+    return jwt.encode(
+        to_encode,
+        settings.secret_key,
+        algorithm=settings.algorithm
+    )
+
+
+def decode_access_token(token: str) -> dict | None:
+    try:
+        return jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=[settings.algorithm]
+        )
+    except JWTError:
+        return None
