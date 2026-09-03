@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.profile import LearnerProfile
+from backend.app.models.profile import LearnerProfile
 
 
 def upsert_profile(db: Session, user_id: int, values: dict) -> LearnerProfile:

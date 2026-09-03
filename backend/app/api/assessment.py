@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app.database.connection import get_db
-from app.models.assessment import Assessment
-from app.models.user import User
-from app.schemas.assessment import AssessmentCreate, AssessmentRead
-from app.services.assessment_service import record_assessment
-from app.utils.dependencies import current_user
+from backend.app.database.connection import get_db
+from backend.app.models.assessment import Assessment
+from backend.app.models.user import User
+from backend.app.schemas.assessment import AssessmentCreate, AssessmentRead
+from backend.app.services.assessment_service import record_assessment
+from backend.app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 

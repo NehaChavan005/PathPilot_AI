@@ -1,8 +1,8 @@
-from app.database.base import Base
-from app.database.connection import engine
+from backend.app.database.base import Base
+from backend.app.database.connection import engine
 
 # Import all models so SQLAlchemy knows about every table.
-from app.models import (
+from backend.app.models import (
     User,
     LearnerProfile,
     Skill,
@@ -12,6 +12,7 @@ from app.models import (
     CourseSkill,
     Enrollment,
     Progress,
+    ProgressHistory,
     Assessment,
     AssessmentResult,
     Recommendation,

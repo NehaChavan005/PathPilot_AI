@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.assessment import Assessment
+from backend.app.models.assessment import Assessment
 
 
 def record_assessment(db: Session, user_id: int, topic: str, score: float) -> Assessment:

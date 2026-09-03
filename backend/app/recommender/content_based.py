@@ -1,4 +1,4 @@
-from app.ai.embeddings import tokenize_embedding
+from backend.app.ai.embeddings import tokenize_embedding
 
 
 def similarity(query: str, content: str) -> float:

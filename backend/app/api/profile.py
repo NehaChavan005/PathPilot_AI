@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.database.connection import get_db
-from app.models.profile import LearnerProfile
-from app.models.user import User
-from app.schemas.profile import ProfileCreate, ProfileRead
-from app.services.profile_service import upsert_profile
-from app.utils.dependencies import current_user
+from backend.app.database.connection import get_db
+from backend.app.models.profile import LearnerProfile
+from backend.app.models.user import User
+from backend.app.schemas.profile import ProfileCreate, ProfileRead
+from backend.app.services.profile_service import upsert_profile
+from backend.app.utils.dependencies import current_user
 
 
 router = APIRouter(

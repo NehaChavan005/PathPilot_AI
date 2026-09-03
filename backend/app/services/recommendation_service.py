@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.recommendation import Recommendation
+from backend.app.models.recommendation import Recommendation
 
 
 def recommendations_for_user(db: Session, user_id: int) -> list[Recommendation]:

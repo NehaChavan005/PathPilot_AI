@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from app.database.connection import SessionLocal
-from app.models import (
+from backend.app.database.connection import SessionLocal
+from backend.app.models import (
     User,
     LearnerProfile,
     Skill,

@@ -1,8 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.database.connection import get_db
-from app.models.user import User
+from backend.app.database.connection import get_db
+from backend.app.models.user import User
 
 
 def current_user(
