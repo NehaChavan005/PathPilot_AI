@@ -1,8 +1,9 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.app.database.connection import get_db
 from backend.app.models.user import User
+from backend.app.utils.security import hash_password
 
 
 def current_user(
@@ -21,11 +22,19 @@ def current_user(
 
     user = User(
         email="dev@pathpilot.local",
-        name="PathPilot Developer"
+        full_name="PathPilot Developer",
+        password_hash=hash_password("dev-only-password"),
     )
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create development user.",
+        )
 
     return user

@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from backend.app.api.auth import router as auth_router
@@ -5,12 +7,21 @@ from backend.app.api.profile import router as profile_router
 from backend.app.api.career import router as career_router
 from backend.app.api.skills import router as skills_router
 from backend.app.api.progress import router as progress_router
+from backend.app.database.init_db import init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create all database tables at startup before handling requests.
+    init_db()
+    yield
 
 
 app = FastAPI(
     title="PathPilot AI",
     description="Personalized AI-powered learning path platform",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 

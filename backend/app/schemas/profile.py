@@ -1,10 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProfileCreate(BaseModel):
-    headline: str | None = None
     target_role: str | None = None
-    bio: str | None = None
+    experience_level: str | None = None
+    education: str | None = None
+    interests: str | None = None
+    preferences: str | None = None
+    weekly_hours: int | None = Field(default=None, ge=0)
 
 
 class ProfileRead(ProfileCreate):

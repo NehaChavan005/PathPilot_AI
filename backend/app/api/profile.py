@@ -36,5 +36,5 @@ def create_or_update_profile(
     return upsert_profile(
         db=db,
         user_id=user.id,
-        profile_data=profile_data
+        values=profile_data.model_dump()
     )
