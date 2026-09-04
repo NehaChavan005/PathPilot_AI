@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { DEFAULT_PROFILE, STREAMS } from '../config/streamConfig';
+import { apiClient, getToken } from '../services/apiClient';
 
 const LearnerProfileContext = createContext();
 
@@ -24,10 +25,90 @@ function saveProfile(profile) {
 
 export const LearnerProfileProvider = ({ children }) => {
   const [profile, setProfile] = useState(loadProfile);
+  const [hydrated, setHydrated] = useState(false);
+  const syncTimer = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     saveProfile(profile);
   }, [profile]);
+
+  // Load the persisted profile from the backend once authenticated.
+  const hydrateFromBackend = useCallback(async () => {
+    if (!getToken()) {
+      setHydrated(true);
+      return;
+    }
+    try {
+      const res = await apiClient('/profile/me');
+      if (res && res.preferences) {
+        try {
+          const stored = JSON.parse(res.preferences);
+          if (stored && typeof stored === 'object') {
+            setProfile((prev) => ({ ...DEFAULT_PROFILE, ...prev, ...stored }));
+          }
+        } catch {
+          // preferences was not a stored profile; fall through
+        }
+      }
+    } catch {
+      // Ignore load errors; keep local profile
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    hydrateFromBackend();
+  }, [hydrateFromBackend]);
+
+  // Persist the profile to the backend (debounced) when it changes.
+  useEffect(() => {
+    if (!getToken() || !hydrated) return;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      const encoded = JSON.stringify(profile);
+      const skills = []
+        .concat(Object.values(profile.capabilities || {}))
+        .flat()
+        .filter(Boolean);
+      const interests = [profile.careerGoal, profile.selectedStream, profile.targetRole]
+        .filter(Boolean)
+        .concat(profile.selectedDomains || [])
+        .concat(profile.specializationTags || [])
+        .filter(Boolean)
+        .join(', ');
+      try {
+        await apiClient('/profile/me', {
+          method: 'POST',
+          body: JSON.stringify({
+            target_role: profile.careerGoal || profile.targetRole || profile.selectedStream || null,
+            experience_level:
+              profile.experienceLevel ||
+              (profile.progress?.currentPhase ? 'intermediate' : 'beginner'),
+            education: profile.education || null,
+            interests: interests || null,
+            preferences: encoded,
+            weekly_hours: Math.max(
+              1,
+              Math.round((profile.dailyStudyMinutes * (profile.studyDays?.length || 3)) / 60) || 5
+            ),
+          }),
+        });
+      } catch {
+        // Non-fatal: profile stays in local state
+      }
+    }, 600);
+
+    return () => {
+      if (syncTimer.current) clearTimeout(syncTimer.current);
+    };
+  }, [profile, hydrated]);
 
   const updateProfile = useCallback((key, value) => {
     setProfile(prev => ({ ...prev, [key]: value }));
@@ -101,6 +182,7 @@ export const LearnerProfileProvider = ({ children }) => {
   return (
     <LearnerProfileContext.Provider value={{
       profile,
+      hydrated,
       updateProfile,
       updateProfileMulti,
       resetProfile,

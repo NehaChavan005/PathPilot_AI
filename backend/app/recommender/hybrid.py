@@ -31,7 +31,7 @@ def recommend(
     current_skills = current_skills or []
     missing_skills = missing_skills or []
     if graph is None:
-        graph = SkillGraph()
+        graph = SkillGraph.from_prerequisite_edges()
 
     scored_items: list[dict[str, Any]] = []
 

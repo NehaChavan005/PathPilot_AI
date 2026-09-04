@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useLearnerProfile } from '../context/LearnerProfileCtx';
+import { apiClient } from '../services/apiClient';
 import { STREAMS, DAILY_TIME_OPTIONS, DURATION_OPTIONS, DAY_OPTIONS } from '../config/streamConfig';
 import Modal from '../components/common/Modal';
 
@@ -7,6 +8,20 @@ const MyProfile = () => {
   const { profile, updateProfile, updateProfileMulti, weeklyAvailableMinutes, addNotification } = useLearnerProfile();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState({});
+  const [backendProgress, setBackendProgress] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    apiClient('/progress/summary')
+      .then((res) => { if (active) setBackendProgress(res); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(profile).length === 0) return;
+    apiClient('/profile/me').catch(() => {});
+  }, [profile]);
 
   const openEdit = () => {
     setEditData({
@@ -47,10 +62,13 @@ const MyProfile = () => {
 
   const streamConfig = STREAMS[profile.selectedStream];
   const overallProgress = useMemo(() => {
+    if (backendProgress && typeof backendProgress.overall_progress_percentage === 'number') {
+      return Math.min(100, Math.round(backendProgress.overall_progress_percentage));
+    }
     const completed = profile.progress?.completedCourses?.length || 0;
     const total = streamConfig?.recommendedCourses?.length || 1;
     return Math.min(100, Math.round((completed / total) * 100));
-  }, [profile.progress, streamConfig]);
+  }, [profile.progress, streamConfig, backendProgress]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen space-y-6 font-sans animate-in fade-in slide-in-from-bottom-4 duration-500">

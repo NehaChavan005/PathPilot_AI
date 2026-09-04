@@ -100,7 +100,7 @@ def assess_skill_gaps(
 ) -> dict[str, Any]:
     """Calculate skill gaps between current skills and target role requirements, with prerequisite prioritization."""
     if graph is None:
-        graph = SkillGraph()
+        graph = SkillGraph.from_prerequisite_edges()
 
     canonical_current = {canonicalize_skill(s) for s in current_skills}
     required_set: set[str] = set()

@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from backend.app.database.connection import get_db
+from backend.app.models.user import User
 from backend.app.schemas.auth import LoginRequest, Token, UserCreate, UserRead
 from backend.app.services.auth_service import login_user, register_user
+from backend.app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -39,3 +41,9 @@ def auth_status():
         "authentication": "JWT enabled",
         "message": "JWT authentication is active."
     }
+
+
+@router.get("/me", response_model=UserRead)
+def auth_me(user: User = Depends(current_user)):
+    """Return the currently authenticated user."""
+    return user

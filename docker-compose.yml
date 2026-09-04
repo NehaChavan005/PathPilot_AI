@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: pathpilot-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/data/pathpilot.db
+      - LLM_PROVIDER=mock
+      - SECRET_KEY=${SECRET_KEY:-pathpilot-production-secret-change-me}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    volumes:
+      - pathpilot-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  pathpilot-data:

@@ -18,7 +18,7 @@ def recalibrate_learning_path(
     completed_ids = completed_course_ids or set()
     available_courses = available_courses or []
     if graph is None:
-        graph = SkillGraph()
+        graph = SkillGraph.from_prerequisite_edges()
 
     canonical_topic = canonicalize_skill(topic)
     remedial_skills: list[str] = []

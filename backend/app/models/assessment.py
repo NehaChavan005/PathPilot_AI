@@ -14,28 +14,28 @@ class Assessment(Base):
         primary_key=True,
     )
 
-    title: Mapped[str] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    topic: Mapped[str] = mapped_column(
         String(200),
         nullable=False,
     )
 
-    skill_id: Mapped[int] = mapped_column(
-        ForeignKey("skills.id"),
+    score: Mapped[float] = mapped_column(
+        Float,
         nullable=False,
     )
 
-    difficulty: Mapped[str] = mapped_column(
-        String(50),
-        default="medium",
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
-    questions_json: Mapped[str] = mapped_column(
-        Text,
-        nullable=False,
-    )
-
-    skill = relationship("Skill")
+    user = relationship("User")
 
 
 class AssessmentResult(Base):

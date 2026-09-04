@@ -18,6 +18,8 @@ from backend.app.models import (
     Recommendation,
     LearningPath,
     RoadmapItem,
+    PhaseProgress,
+    Certificate,
 )
 from backend.app.models import feedback
 

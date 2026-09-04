@@ -27,11 +27,22 @@ def override_get_db():
         db.close()
 
 
+def override_current_user():
+    db = TestingSessionLocal()
+    try:
+        user = db.query(User).first()
+        return user
+    finally:
+        db.close()
+
+
 # Build an isolated app for these tests so we never interfere with other test
 # modules that override the shared `get_db` dependency on the main app.
 test_app = FastAPI()
 test_app.include_router(progress_router, prefix="/api")
 test_app.dependency_overrides[get_db] = override_get_db
+import backend.app.utils.dependencies as deps
+test_app.dependency_overrides[deps.current_user] = override_current_user
 client = TestClient(test_app)
 
 
@@ -71,16 +82,8 @@ def _seed(db):
     db.add_all([course_py, course_ml])
     db.flush()
 
-    assessment_py = Assessment(
-        title="Python Test",
-        skill_id=skill_py.id,
-        questions_json="[]",
-    )
-    assessment_ml = Assessment(
-        title="ML Test",
-        skill_id=skill_ml.id,
-        questions_json="[]",
-    )
+    assessment_py = Assessment(user_id=user.id, topic="Python", score=50)
+    assessment_ml = Assessment(user_id=user.id, topic="Machine Learning", score=50)
     db.add_all([assessment_py, assessment_ml])
     db.flush()
 
@@ -131,7 +134,7 @@ def test_create_progress():
     db.close()
 
     response = client.post(
-        "/api/progress/",
+        "/api/progress",
         json={"course_id": seed["course_py"], "progress_percentage": 60},
     )
     assert response.status_code == 201
@@ -147,10 +150,10 @@ def test_update_progress_no_duplicate():
     seed = _seed(db)
     db.close()
 
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 30})
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 80})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 30})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 80})
 
-    data = client.get("/api/progress/").json()
+    data = client.get("/api/progress").json()
     course_records = [r for r in data if r["course_id"] == seed["course_py"]]
     assert len(course_records) == 1
     assert course_records[0]["progress_percentage"] == 80
@@ -165,7 +168,7 @@ def test_zero_percent_not_started():
     db.close()
 
     body = client.post(
-        "/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 0}
+        "/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 0}
     ).json()
     assert body["status"] == "not_started"
 
@@ -176,7 +179,7 @@ def test_hundred_percent_completed():
     db.close()
 
     body = client.post(
-        "/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 100}
+        "/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 100}
     ).json()
     assert body["status"] == "completed"
     assert body["completed_at"] is not None
@@ -188,12 +191,12 @@ def test_invalid_percentage_422():
     db.close()
 
     response = client.post(
-        "/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 150}
+        "/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 150}
     )
     assert response.status_code == 422
 
     response = client.post(
-        "/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": -5}
+        "/api/progress", json={"course_id": seed["course_py"], "progress_percentage": -5}
     )
     assert response.status_code == 422
 
@@ -203,7 +206,7 @@ def test_invalid_course_404():
     _seed(db)
     db.close()
 
-    response = client.post("/api/progress/", json={"course_id": 9999, "progress_percentage": 50})
+    response = client.post("/api/progress", json={"course_id": 9999, "progress_percentage": 50})
     assert response.status_code == 404
 
 
@@ -215,10 +218,10 @@ def test_get_user_progress():
     seed = _seed(db)
     db.close()
 
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 100})
-    client.post("/api/progress/", json={"course_id": seed["course_ml"], "progress_percentage": 45})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 100})
+    client.post("/api/progress", json={"course_id": seed["course_ml"], "progress_percentage": 45})
 
-    data = client.get("/api/progress/").json()
+    data = client.get("/api/progress").json()
     assert len(data) == 2
     assert data[0]["course_title"] == "Python Fundamentals"
     assert data[1]["course_title"] == "Machine Learning"
@@ -229,7 +232,7 @@ def test_get_course_progress_existing():
     seed = _seed(db)
     db.close()
 
-    client.post("/api/progress/", json={"course_id": seed["course_ml"], "progress_percentage": 45})
+    client.post("/api/progress", json={"course_id": seed["course_ml"], "progress_percentage": 45})
 
     body = client.get(f"/api/progress/{seed['course_ml']}").json()
     assert body["course_id"] == seed["course_ml"]
@@ -254,8 +257,8 @@ def test_progress_summary():
     seed = _seed(db)
     db.close()
 
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 100})
-    client.post("/api/progress/", json={"course_id": seed["course_ml"], "progress_percentage": 28})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 100})
+    client.post("/api/progress", json={"course_id": seed["course_ml"], "progress_percentage": 28})
 
     summary = client.get("/api/progress/summary").json()
     assert summary["total_courses"] == 2
@@ -295,9 +298,9 @@ def test_progress_history_chronological():
     seed = _seed(db)
     db.close()
 
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 20})
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 50})
-    client.post("/api/progress/", json={"course_id": seed["course_py"], "progress_percentage": 100})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 20})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 50})
+    client.post("/api/progress", json={"course_id": seed["course_py"], "progress_percentage": 100})
 
     history = client.get("/api/progress/history").json()
     percentages = [h["progress_percentage"] for h in history]

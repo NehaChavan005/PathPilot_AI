@@ -1,22 +1,22 @@
 import React, { useRef, useEffect } from 'react';
 
-const SkillHistogram = () => {
-  const data = [
+const SkillHistogram = ({ data }) => {
+  const chartData = (data && data.length > 0 ? data : [
     { label: "Algorithms", value: 40 },
     { label: "Python/Flask", value: 90 },
     { label: "Deep Learning", value: 30 },
     { label: "Data Eng", value: 75 },
     { label: "MLOps", value: 20 },
     { label: "Streamlit UI", value: 85 },
-  ];
+  ]);
 
   const barRefs = useRef([]);
 
   useEffect(() => {
-    data.forEach((_, idx) => {
+    chartData.forEach((_, idx) => {
       setTimeout(() => {
         if (barRefs.current[idx]) {
-          barRefs.current[idx].style.setProperty('--target-height', `${data[idx].value}%`);
+          barRefs.current[idx].style.setProperty('--target-height', `${chartData[idx].value}%`);
           barRefs.current[idx].classList.add('bar-animate-in');
         }
       }, idx * 120 + 200);
@@ -77,7 +77,7 @@ const SkillHistogram = () => {
       </div>
       
       <div className="flex-1 flex items-end justify-between gap-4 border-b border-slate-100 pb-4 mt-8 relative z-10">
-        {data.map((item, idx) => (
+        {chartData.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center flex-1 group cursor-pointer">
             <div className="w-full flex justify-center relative">
               
@@ -140,7 +140,7 @@ const SkillHistogram = () => {
       
       {/* Horizontal Labels */}
       <div className="flex justify-between mt-4 px-1 relative z-10">
-        {data.map((item, idx) => (
+        {chartData.map((item, idx) => (
           <div key={idx} className="text-[10px] font-bold text-slate-500 text-center flex-1 px-1 group relative">
             <span className="hidden sm:block transition-colors duration-300 group-hover:text-slate-700">{item.label}</span>
             <span className="block sm:hidden truncate">{item.label.substring(0, 4)}...</span>

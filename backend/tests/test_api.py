@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
-from main import app
+from backend.main import app
+from backend.app.database.init_db import init_db
 
-
+init_db()
 client = TestClient(app)
 
 
@@ -11,7 +12,7 @@ def test_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_feedback() -> None:
-    response = client.post("/api/v1/feedback", json={"message": "Helpful roadmap"})
+def test_root() -> None:
+    response = client.get("/")
     assert response.status_code == 200
-    assert response.json()["status"] == "received"
+    assert response.json()["status"] == "ok"

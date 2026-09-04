@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from backend.app.ai.adaptive_engine import recalibrate_learning_path
 from backend.app.ai.goal_analyzer import analyze_goal
 from backend.app.ai.simulator import simulate_scenario
@@ -7,7 +8,7 @@ from backend.app.ai.skill_extractor import assess_skill_gaps, extract_skills
 from backend.app.database.connection import get_db
 from backend.app.models.course import Course
 from backend.app.models.profile import LearnerProfile
-from backend.app.models.progress import Progress
+from backend.app.models.progress import Enrollment, Progress
 from backend.app.models.user import User
 from backend.app.schemas.ai import (
     AdaptiveRecalibrateRequest,
@@ -34,7 +35,7 @@ def run_goal_analysis(
     profile = db.query(LearnerProfile).filter_by(user_id=user.id).first()
     context = {
         "target_role": profile.target_role if profile else None,
-        "bio": profile.bio if profile else None,
+        "interests": profile.interests if profile else None,
     }
     result = analyze_goal(payload.goal, profile_context=context)
     return result
@@ -52,11 +53,10 @@ def run_skill_gap_analysis(
     # Determine target role
     target_role = payload.target_role or (profile.target_role if profile else "Full Stack Developer")
 
-    # Combine explicit skills with skills extracted from profile bio
+    # Combine explicit skills with skills extracted from profile interests
     current_skills = list(payload.current_skills)
-    if profile and profile.bio:
-        bio_skills = extract_skills(profile.bio)
-        for s in bio_skills:
+    if profile and profile.interests:
+        for s in extract_skills(profile.interests):
             if s not in current_skills:
                 current_skills.append(s)
 
@@ -80,17 +80,29 @@ def run_adaptive_recalibration(
 
     # Fetch completed courses
     completed = {
-        p.course_id for p in db.query(Progress).filter_by(user_id=user.id, percent_complete=100.0).all()
+        p.course_id
+        for p in db.query(Progress).join(Enrollment).filter(
+            Enrollment.user_id == user.id,
+            Progress.completion_percentage >= 100.0,
+        ).all()
     }
 
     # Fetch courses
     courses_db = db.query(Course).all()
-    available_courses = [
-        {"id": c.id, "title": c.title, "description": c.description, "provider": c.provider, "url": c.url}
-        for c in courses_db
-    ]
+    available_courses = []
+    for c in courses_db:
+        skills = [cs.skill.name for cs in c.skills] if hasattr(c, "skills") else []
+        available_courses.append({
+            "id": c.id,
+            "title": c.title,
+            "description": c.description,
+            "provider": c.provider,
+            "url": c.url,
+            "difficulty": c.difficulty,
+            "skills": skills,
+        })
 
-    current_skills = extract_skills(profile.bio) if (profile and profile.bio) else []
+    current_skills = extract_skills(profile.interests) if (profile and profile.interests) else []
 
     result = recalibrate_learning_path(
         user_id=user.id,
@@ -118,14 +130,19 @@ def run_what_if_simulation(
 
     # Fetch courses for course delta
     courses_db = db.query(Course).all()
-    available_courses = [
-        {"id": c.id, "title": c.title, "description": c.description}
-        for c in courses_db
-    ]
+    available_courses = []
+    for c in courses_db:
+        skills = [cs.skill.name for cs in c.skills] if hasattr(c, "skills") else []
+        available_courses.append({
+            "id": c.id,
+            "title": c.title,
+            "description": c.description,
+            "skills": skills,
+        })
 
     current_skills = list(payload.current_skills)
-    if profile and profile.bio:
-        for s in extract_skills(profile.bio):
+    if profile and profile.interests:
+        for s in extract_skills(profile.interests):
             if s not in current_skills:
                 current_skills.append(s)
 

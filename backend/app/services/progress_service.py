@@ -231,7 +231,7 @@ def get_skill_progress(db: Session, user_id: int) -> list[dict]:
     skill_scores: dict[str, list[float]] = {}
 
     for result in results:
-        skill_name = result.assessment.skill.name
+        skill_name = result.assessment.topic
         skill_scores.setdefault(skill_name, []).append(result.score)
 
     skill_progress = []

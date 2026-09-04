@@ -1,5 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from backend.app.database.connection import get_db
+from backend.app.models.profile import LearnerProfile
+from backend.app.models.user import User
+from backend.app.services.career_path_service import build_career_path
+from backend.app.services.career_service import recommend_career
+from backend.app.utils.dependencies import current_user
 
 router = APIRouter(
     prefix="/career",
@@ -12,69 +20,63 @@ class CareerRequest(BaseModel):
     interests: list[str] = []
 
 
+class CareerPathRequest(BaseModel):
+    career_goal: str
+    current_skills: list[str] = []
+
+
 @router.get("/")
 def get_careers():
+    from backend.app.knowledge_graph.ontology import ROLE_SKILL_TAXONOMY
     return {
-        "message": "Career API is working"
+        "careers": [
+            {
+                "title": role,
+                "required_skills": data["required"],
+                "recommended_skills": data["recommended"],
+            }
+            for role, data in ROLE_SKILL_TAXONOMY.items()
+        ]
     }
 
 
 @router.post("/recommend")
-def recommend_career(data: CareerRequest):
-
-    skills = [skill.lower() for skill in data.skills]
-    interests = [interest.lower() for interest in data.interests]
-
-    recommendations = []
-
-    # AI / Machine Learning
-    if any(
-        keyword in skills + interests
-        for keyword in ["python", "machine learning", "ml", "ai", "artificial intelligence"]
-    ):
-        recommendations.append({
-            "career": "AI / Machine Learning Engineer",
-            "reason": "Your skills and interests match AI and machine learning."
-        })
-
-    # Data Science
-    if any(
-        keyword in skills + interests
-        for keyword in ["python", "data science", "statistics", "pandas", "data analysis"]
-    ):
-        recommendations.append({
-            "career": "Data Scientist",
-            "reason": "Your skills indicate an interest in data analysis and predictive modeling."
-        })
-
-    # Cybersecurity
-    if any(
-        keyword in skills + interests
-        for keyword in ["cybersecurity", "security", "networking", "linux", "soc", "splunk"]
-    ):
-        recommendations.append({
-            "career": "Cybersecurity Analyst",
-            "reason": "Your skills and interests match cybersecurity and security operations."
-        })
-
-    # Software Development
-    if any(
-        keyword in skills + interests
-        for keyword in ["java", "javascript", "react", "fastapi", "flask", "web development"]
-    ):
-        recommendations.append({
-            "career": "Software Developer",
-            "reason": "Your technical skills match software and web development."
-        })
-
-    if not recommendations:
-        recommendations.append({
-            "career": "Explore Multiple Career Paths",
-            "reason": "More information about your skills and interests is needed."
-        })
-
+def recommend(data: CareerRequest):
+    result = recommend_career(data.skills, data.interests)
     return {
         "skills": data.skills,
         "interests": data.interests,
-        "recommendations": recommendations
+        "recommendations": [result],
     }
+
+
+@router.post("/path")
+def career_path(
+    payload: CareerPathRequest,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    """Return a dynamic skill-flowchart for a given career goal."""
+    profile = db.query(LearnerProfile).filter_by(user_id=user.id).first()
+
+    # Merge explicit skills with profile-derived skills
+    skills = list(payload.current_skills)
+    if profile and profile.interests:
+        from backend.app.ai.skill_extractor import extract_skills
+        for s in extract_skills(profile.interests):
+            if s not in skills:
+                skills.append(s)
+
+    # Add skills from profile capabilities (stored as JSON)
+    if profile and profile.preferences:
+        import json
+        try:
+            stored = json.loads(profile.preferences)
+            caps = stored.get("capabilities", {})
+            for sk in caps:
+                if sk not in skills:
+                    skills.append(sk)
+        except Exception:
+            pass
+
+    return build_career_path(payload.career_goal, skills)

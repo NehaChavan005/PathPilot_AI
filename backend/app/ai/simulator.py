@@ -22,7 +22,7 @@ def simulate_scenario(
     current_skills_canonical = {canonicalize_skill(s) for s in (current_skills or [])}
     available_courses = available_courses or []
     if graph is None:
-        graph = SkillGraph()
+        graph = SkillGraph.from_prerequisite_edges()
 
     target_simulated_role = (simulated_role or current_role).strip()
     target_current_role = current_role.strip()

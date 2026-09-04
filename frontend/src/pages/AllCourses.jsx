@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLearnerProfile } from '../context/LearnerProfileCtx';
+import { apiClient } from '../services/apiClient';
 import { STREAMS } from '../config/streamConfig';
 
 const AllCourses = () => {
@@ -8,20 +9,62 @@ const AllCourses = () => {
   const [filterDifficulty, setFilterDifficulty] = useState('All');
   const [filterDomain, setFilterDomain] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const allCourses = useMemo(() => {
-    const courses = [];
-    Object.entries(STREAMS).forEach(([streamName, config]) => {
-      config.recommendedCourses.forEach(course => {
-        courses.push({
-          ...course,
-          stream: streamName,
-          streamIcon: config.icon
+  // Match a backend course against the local stream metadata so the card
+  // layout stays intact while the underlying data comes from the database.
+  const matchMeta = (course) => {
+    const title = `${course.title} ${course.provider || ''}`.toLowerCase();
+    let stream = null;
+    for (const [name, cfg] of Object.entries(STREAMS)) {
+      const matches = cfg.recommendedCourses.some((c) =>
+        title.includes((c.title || '').toLowerCase().slice(0, 24))
+      );
+      if (matches) { stream = name; break; }
+    }
+    const local = stream
+      ? STREAMS[stream].recommendedCourses.find((c) =>
+          `${(course.title || '').toLowerCase()} ${(course.provider || '').toLowerCase()}`.includes((c.title || '').toLowerCase().slice(0, 24))
+        )
+      : null;
+    return {
+      ...course,
+      stream: stream || 'General',
+      streamIcon: stream ? STREAMS[stream].icon : '🎓',
+      domain: local?.domain || course.difficulty || 'General',
+      technologies: local?.technologies || [],
+      duration: local?.duration || 'Flexible',
+    };
+  };
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await apiClient('/recommendations/generate', {
+          method: 'POST',
+          body: JSON.stringify({
+            target_role: profile.careerGoal || profile.targetRole || profile.selectedStream || undefined,
+            top_k: 50,
+          }),
         });
-      });
-    });
-    return courses;
-  }, []);
+        if (!active) return;
+        setCourses((Array.isArray(res) ? res : []).map(matchMeta));
+      } catch (err) {
+        if (active) setError(err.detail || err.message || 'Unable to load courses.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [profile.careerGoal, profile.targetRole, profile.selectedStream]);
+
+  const allCourses = useMemo(() => courses, [courses]);
 
   const domains = useMemo(() => {
     const d = new Set(allCourses.map(c => c.domain));
@@ -48,10 +91,14 @@ const AllCourses = () => {
         <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-lg uppercase tracking-widest mb-4 inline-block">Course Catalog</span>
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">All Courses</h1>
         <p className="text-slate-500 font-medium text-sm mt-2">
-          Browse {allCourses.length} courses across all streams. 
+          Browse {loading ? '…' : allCourses.length} courses across all streams. 
           {profile.selectedStream ? ` Showing recommendations for ${profile.selectedStream}.` : ''}
         </p>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold rounded-2xl">{error}</div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-2xl p-6 mb-6 border border-slate-200 shadow-sm">
@@ -109,10 +156,15 @@ const AllCourses = () => {
       </div>
 
       {/* Course Grid */}
-      {filtered.length > 0 ? (
+      {loading ? (
+        <div className="bg-white rounded-[2rem] p-16 border border-slate-200 shadow-sm text-center">
+          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm font-bold text-slate-500">Loading course catalog...</p>
+        </div>
+      ) : filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(course => (
-            <div key={`${course.stream}-${course.id}`} className="border border-slate-100 bg-white rounded-2xl p-5 hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between h-full">
+            <div key={`${course.stream}-${course.id}`} className="border border-slate-100 bg-white rounded-2xl p-5 hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between h-full" onClick={() => course.url && window.open(course.url, '_blank', 'noopener,noreferrer')}>
               <div>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">

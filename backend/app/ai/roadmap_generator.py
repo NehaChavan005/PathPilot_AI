@@ -16,7 +16,7 @@ def generate_personalized_roadmap(
     current_skills = current_skills or []
     available_courses = available_courses or []
     if graph is None:
-        graph = SkillGraph()
+        graph = SkillGraph.from_prerequisite_edges()
 
     weekly_study_hours = max(2, weekly_study_hours)
 

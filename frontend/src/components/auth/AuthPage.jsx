@@ -10,8 +10,10 @@ import './AuthForms.css';
 
 const AuthPage = ({ initialMode = 'register' }) => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, register, error: authError } = useAuth();
   const { profile, updateProfile } = useLearnerProfile();
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authErr, setAuthErr] = useState('');
   const [mode, setMode] = useState(initialMode);
   const [transitioning, setTransitioning] = useState(false);
   const [displayMode, setDisplayMode] = useState(initialMode);
@@ -74,23 +76,40 @@ const AuthPage = ({ initialMode = 'register' }) => {
     }, 450);
   }, [mode, transitioning]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login({ name: profile.name || 'User', email: loginData.email });
-    if (profile.onboardingComplete) {
-      navigate('/dashboard');
-    } else {
-      navigate('/onboarding');
+    setAuthLoading(true);
+    setAuthErr('');
+    try {
+      await login({ email: loginData.email, password: loginData.password });
+      // After successful login, restore persisted profile or direct to onboarding
+      if (profile.onboardingComplete) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    } catch (err) {
+      setAuthErr(err.detail || err.message || 'Login failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (registerData.name) {
-      updateProfile('name', registerData.name);
+    setAuthLoading(true);
+    setAuthErr('');
+    try {
+      if (registerData.name) {
+        updateProfile('name', registerData.name);
+      }
+      await register({ name: registerData.name, email: registerData.email, password: registerData.password });
+      navigate('/onboarding');
+    } catch (err) {
+      setAuthErr(err.detail || err.message || 'Registration failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
     }
-    login({ name: registerData.name, email: registerData.email });
-    navigate('/onboarding');
   };
 
   const currentFormData = displayMode === 'login' ? loginData : registerData;
@@ -117,6 +136,7 @@ const AuthPage = ({ initialMode = 'register' }) => {
                     <h2 className="auth-form-title">Create your account</h2>
                     <p className="auth-form-subtitle">Accelerate your career in tech and AI.</p>
                   </div>
+                  {authErr && <div className="auth-form-error">{authErr}</div>}
                   <div className="auth-form-fields">
                     <Field
                       label="Full Name"
@@ -142,8 +162,8 @@ const AuthPage = ({ initialMode = 'register' }) => {
                       onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                     />
                   </div>
-                  <button type="submit" className="auth-form-submit">
-                    Get Started →
+                  <button type="submit" className="auth-form-submit" disabled={authLoading}>
+                    {authLoading ? 'Creating account...' : 'Get Started →'}
                   </button>
                   <p className="auth-form-footer">
                     Already have an account?{' '}
@@ -158,6 +178,7 @@ const AuthPage = ({ initialMode = 'register' }) => {
                     <h2 className="auth-form-title">Welcome back</h2>
                     <p className="auth-form-subtitle">Sign in to continue your learning journey.</p>
                   </div>
+                  {authErr && <div className="auth-form-error">{authErr}</div>}
                   <div className="auth-form-fields">
                     <Field
                       label="Email"
@@ -177,10 +198,10 @@ const AuthPage = ({ initialMode = 'register' }) => {
                     />
                   </div>
                   <div className="auth-form-forgot">
-                    <a href="#" className="auth-form-link">Forgot password?</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); alert('Password reset is not yet implemented. Contact support@pathpilot.ai.'); }} className="auth-form-link">Forgot password?</a>
                   </div>
-                  <button type="submit" className="auth-form-submit">
-                    Sign In
+                  <button type="submit" className="auth-form-submit" disabled={authLoading}>
+                    {authLoading ? 'Signing In...' : 'Sign In'}
                   </button>
                   <p className="auth-form-footer">
                     Don't have an account?{' '}

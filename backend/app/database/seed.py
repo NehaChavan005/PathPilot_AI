@@ -12,6 +12,7 @@ from backend.app.models import (
     Enrollment,
     Progress,
 )
+from backend.app.utils.security import hash_password
 
 SKILLS = [
     # Programming
@@ -646,7 +647,7 @@ def seed_database():
 
             skill_map[name] = skill
 
-        print(f"✓ Skills loaded: {len(skill_map)}")
+        print(f"[OK] Skills loaded: {len(skill_map)}")
 
         # -------------------------
         # Prerequisites
@@ -676,7 +677,7 @@ def seed_database():
                 prerequisite_count += 1
 
         print(
-            f"✓ Prerequisites loaded: {prerequisite_count}"
+            f"[OK] Prerequisites loaded: {prerequisite_count}"
         )
 
         # -------------------------
@@ -736,7 +737,7 @@ def seed_database():
                         )
                     )
 
-        print(f"✓ Courses loaded: {len(course_map)}")
+        print(f"[OK] Courses loaded: {len(course_map)}")
 
         # -------------------------
         # Demo Learner
@@ -750,7 +751,7 @@ def seed_database():
 
             demo_user = User(
                 email="demo@pathpilot.ai",
-                password_hash="demo_password",
+                password_hash=hash_password("demo_password"),
                 full_name="Demo Learner",
             )
 

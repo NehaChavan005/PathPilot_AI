@@ -23,7 +23,7 @@ const MegaMenu = ({ isVisible }) => {
       </div>
       <div className="w-2/3 p-6 bg-white min-h-[300px]">
         <h3 className="text-lg font-black text-slate-900 mb-4">{activeCategory}</h3>
-        <div className="border border-slate-100 p-4 rounded-xl cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all bg-slate-50/50">
+        <div className="border border-slate-100 p-4 rounded-xl cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all bg-slate-50/50" onClick={() => window.location.href = '/courses'}>
           <span className="text-[10px] font-bold text-slate-400 uppercase">Featured</span>
           <h4 className="text-sm font-bold text-indigo-900 mt-1">Applied Generative AI</h4>
         </div>

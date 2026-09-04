@@ -1,20 +1,20 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from backend.app.database.connection import get_db
 from backend.app.models.assessment import AssessmentResult
 from backend.app.models.course import Course
 from backend.app.models.progress import Enrollment, Progress
 from backend.app.models.user import User
+from backend.app.schemas.dashboard import DashboardRead
 from backend.app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
-@router.get("")
+@router.get("", response_model=DashboardRead)
 def dashboard(user: User = Depends(current_user), db: Session = Depends(get_db)):
-    enrollments = (
-        db.query(Enrollment).filter(Enrollment.user_id == user.id).all()
-    )
+    enrollments = db.query(Enrollment).filter(Enrollment.user_id == user.id).all()
 
     course_count = len(enrollments)
 
