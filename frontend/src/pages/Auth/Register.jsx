@@ -2,11 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthSplit from '../../components/auth/AuthSplit';
 import Field from '../../components/auth/Field';
+import { useAuth } from '../../context/AuthContext';
 import './AuthForms.css';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const formRef = useRef(null);
 
@@ -15,9 +19,25 @@ const Register = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleRegister = (e) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/onboarding');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    navigate('/onboarding');
+    setError('');
+    setLoading(true);
+
+    try {
+      await register(formData.email, formData.password, formData.name);
+      navigate('/login');
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSwitchToLogin = (e) => {
@@ -36,7 +56,7 @@ const Register = () => {
         <div className="auth-form-fields">
           <Field 
             label="Full Name" 
-            placeholder="e.g. Omkar" 
+            placeholder="e.g. Alex" 
             required 
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -44,7 +64,7 @@ const Register = () => {
           <Field 
             label="Email" 
             type="email" 
-            placeholder="omkar@example.com" 
+            placeholder="you@example.com" 
             required 
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -58,12 +78,17 @@ const Register = () => {
             onChange={(e) => setFormData({...formData, password: e.target.value})}
           />
         </div>
+
+        {error && (
+          <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '8px' }}>{error}</p>
+        )}
         
         <button 
           type="submit" 
           className="auth-form-submit"
+          disabled={loading}
         >
-          Get Started →
+          {loading ? 'Creating Account...' : 'Get Started →'}
         </button>
         
         <p className="auth-form-footer">

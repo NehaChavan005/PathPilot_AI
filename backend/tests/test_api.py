@@ -12,6 +12,6 @@ def test_health() -> None:
 
 
 def test_feedback() -> None:
-    response = client.post("/api/v1/feedback", json={"message": "Helpful roadmap"})
+    response = client.post("/api/feedback", json={"message": "Helpful roadmap"})
     assert response.status_code == 200
     assert response.json()["status"] == "received"

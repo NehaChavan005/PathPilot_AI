@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLearnerProfile } from '../../context/LearnerProfileCtx';
+import { useAuth } from '../../context/AuthContext';
 import MegaMenu from './MegaMenu';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { profile, markAllNotificationsRead } = useLearnerProfile();
+  const { logout } = useAuth();
   const [showCourses, setShowCourses] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const menuRef = useRef(null);
@@ -109,8 +111,9 @@ const Navbar = () => {
 
         {/* User Avatar */}
         <div 
-          onClick={() => navigate('/profile')}
+          onClick={() => { logout(); navigate('/login'); }}
           className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm border border-indigo-100 cursor-pointer hover:shadow-md transition-shadow"
+          title="Logout"
         >
           {(profile.name || 'U').charAt(0).toUpperCase()}
         </div>

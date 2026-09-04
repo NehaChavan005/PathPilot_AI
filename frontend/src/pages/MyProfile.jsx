@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { useLearnerProfile } from '../context/LearnerProfileCtx';
+import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../services/apiClient';
 import { STREAMS, DAILY_TIME_OPTIONS, DURATION_OPTIONS, DAY_OPTIONS } from '../config/streamConfig';
 import Modal from '../components/common/Modal';
 
 const MyProfile = () => {
   const { profile, updateProfile, updateProfileMulti, weeklyAvailableMinutes, addNotification } = useLearnerProfile();
+  const { isAuthenticated } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState({});
 
@@ -37,6 +40,16 @@ const MyProfile = () => {
       specializationTags: editData.specializationTags,
       notificationSettings: editData.notificationSettings
     });
+    if (isAuthenticated) {
+      apiClient('/profile/me', {
+        method: 'POST',
+        body: JSON.stringify({
+          target_role: editData.careerGoal,
+          experience_level: profile.experience_level || 'beginner',
+          interests: (editData.selectedDomains || []).join(', ')
+        })
+      }).catch(() => {});
+    }
     addNotification({
       id: `profile-update-${Date.now()}`,
       message: 'Your profile has been updated. Recommendations and roadmap have been recalculated.',

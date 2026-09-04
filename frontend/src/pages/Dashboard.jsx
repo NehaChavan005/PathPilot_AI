@@ -1,18 +1,34 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLearnerProfile } from '../context/LearnerProfileCtx';
 import { generateRoadmap, getRecommendedCourses, generateDailyPlan, calculateProgress } from '../utils/roadmapEngine';
 import { generateNotifications } from '../utils/notifications';
 import { STREAMS } from '../config/streamConfig';
+import { apiClient } from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { profile, weeklyAvailableMinutes, setNotifications } = useLearnerProfile();
+  const { isAuthenticated } = useAuth();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   const roadmap = useMemo(() => generateRoadmap(profile), [profile]);
   const recommendedCourses = useMemo(() => getRecommendedCourses(profile).slice(0, 4), [profile]);
   const dailyPlan = useMemo(() => generateDailyPlan(profile), [profile]);
   const overallProgress = useMemo(() => calculateProgress(profile), [profile]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      apiClient('/dashboard')
+        .then(data => setDashboardData(data))
+        .catch(() => {});
+      apiClient('/recommendations')
+        .then(data => setRecommendations(data))
+        .catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (profile.onboardingComplete) {

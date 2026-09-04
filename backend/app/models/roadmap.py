@@ -29,6 +29,12 @@ class LearningPath(Base):
         nullable=True,
     )
 
+    steps_json: Mapped[str] = mapped_column(
+        Text,
+        default="[]",
+        nullable=False,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

@@ -1,14 +1,16 @@
 import React, { useRef, useEffect } from 'react';
 
-const SkillHistogram = () => {
-  const data = [
-    { label: "Algorithms", value: 40 },
-    { label: "Python/Flask", value: 90 },
-    { label: "Deep Learning", value: 30 },
-    { label: "Data Eng", value: 75 },
-    { label: "MLOps", value: 20 },
-    { label: "Streamlit UI", value: 85 },
-  ];
+const SkillHistogram = ({ skillProgress = [] }) => {
+  const data = skillProgress.length > 0
+    ? skillProgress.slice(0, 8).map(s => ({ label: s.skill, value: Math.round(s.latest_score) }))
+    : [
+        { label: "Algorithms", value: 40 },
+        { label: "Python/Flask", value: 90 },
+        { label: "Deep Learning", value: 30 },
+        { label: "Data Eng", value: 75 },
+        { label: "MLOps", value: 20 },
+        { label: "Streamlit UI", value: 85 },
+      ];
 
   const barRefs = useRef([]);
 

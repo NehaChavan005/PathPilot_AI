@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
+import { sendChatMessage } from '../../services/roleplayApi';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
     { sender: 'ai', text: 'Hello! I will be conducting your technical interview today. Can you explain the difference between supervised and unsupervised learning?' }
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { sender: 'user', text: input }]);
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+
+    const userMessage = { sender: 'user', text: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-    // Simulate AI typing delay
-    setTimeout(() => {
-      setMessages(prev => [...prev, { sender: 'ai', text: 'That is a great explanation. How would you handle missing values in a dataset using Pandas?' }]);
-    }, 1500);
+    setLoading(true);
+
+    try {
+      const response = await sendChatMessage(input);
+      setMessages(prev => [...prev, { sender: 'ai', text: response.text }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, I encountered an error. Please try again.' }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,6 +41,17 @@ const ChatInterface = () => {
             </div>
           </div>
         ))}
+        {loading && (
+          <div className="flex justify-start animate-in fade-in duration-200">
+            <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-5 bg-white border-t border-slate-100">
@@ -41,13 +62,15 @@ const ChatInterface = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Type your response..." 
-            className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all text-sm font-medium"
+            disabled={loading}
+            className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all text-sm font-medium disabled:opacity-50"
           />
           <button 
             onClick={handleSend}
-            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+            disabled={loading || !input.trim()}
+            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send
+            {loading ? 'Sending...' : 'Send'}
           </button>
         </div>
       </div>

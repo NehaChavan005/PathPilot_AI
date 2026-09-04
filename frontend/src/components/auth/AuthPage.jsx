@@ -10,12 +10,13 @@ import './AuthForms.css';
 
 const AuthPage = ({ initialMode = 'register' }) => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const { profile, updateProfile } = useLearnerProfile();
+  const { login, register, isAuthenticated } = useAuth();
+  const { updateProfile } = useLearnerProfile();
   const [mode, setMode] = useState(initialMode);
   const [transitioning, setTransitioning] = useState(false);
   const [displayMode, setDisplayMode] = useState(initialMode);
   const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState('');
   const [authCardActive, setAuthCardActive] = useState(false);
   const [authCardRect, setAuthCardRect] = useState(null);
   const formCardRef = useRef(null);
@@ -63,6 +64,12 @@ const AuthPage = ({ initialMode = 'register' }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
   const switchMode = useCallback((newMode) => {
     if (newMode === mode || transitioning) return;
     setTransitioning(true);
@@ -74,23 +81,29 @@ const AuthPage = ({ initialMode = 'register' }) => {
     }, 450);
   }, [mode, transitioning]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login({ name: profile.name || 'User', email: loginData.email });
-    if (profile.onboardingComplete) {
+    setError('');
+    try {
+      await login(loginData.email, loginData.password);
       navigate('/dashboard');
-    } else {
-      navigate('/onboarding');
+    } catch (err) {
+      setError(err?.message || 'Invalid email or password');
     }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (registerData.name) {
-      updateProfile('name', registerData.name);
+    setError('');
+    try {
+      await register(registerData.email, registerData.password, registerData.name);
+      if (registerData.name) {
+        updateProfile('name', registerData.name);
+      }
+      navigate('/onboarding');
+    } catch (err) {
+      setError(err?.message || 'Registration failed');
     }
-    login({ name: registerData.name, email: registerData.email });
-    navigate('/onboarding');
   };
 
   const currentFormData = displayMode === 'login' ? loginData : registerData;
@@ -142,6 +155,9 @@ const AuthPage = ({ initialMode = 'register' }) => {
                       onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                     />
                   </div>
+                  {error && displayMode === 'register' && (
+                    <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '8px' }}>{error}</p>
+                  )}
                   <button type="submit" className="auth-form-submit">
                     Get Started →
                   </button>
@@ -179,6 +195,9 @@ const AuthPage = ({ initialMode = 'register' }) => {
                   <div className="auth-form-forgot">
                     <a href="#" className="auth-form-link">Forgot password?</a>
                   </div>
+                  {error && displayMode === 'login' && (
+                    <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '8px' }}>{error}</p>
+                  )}
                   <button type="submit" className="auth-form-submit">
                     Sign In
                   </button>

@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLearnerProfile } from '../context/LearnerProfileCtx';
+import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../services/apiClient';
 import StreamSelector from '../components/onboarding/StreamSelector';
 import SkillLevelInput from '../components/onboarding/SkillLevelInput';
 import ToolsLanguagesStep from '../components/onboarding/ToolsLanguagesStep';
@@ -14,6 +16,7 @@ const TOTAL_STEPS = 6;
 const OnboardingFlow = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useLearnerProfile();
+  const { isAuthenticated } = useAuth();
   const [step, setStep] = useState(1);
   const [generating, setGenerating] = useState(false);
 
@@ -92,8 +95,18 @@ const OnboardingFlow = () => {
       ]
     };
     completeOnboarding(profileData);
+    if (isAuthenticated) {
+      apiClient('/profile/me', {
+        method: 'POST',
+        body: JSON.stringify({
+          target_role: formData.careerGoal,
+          experience_level: 'beginner',
+          interests: formData.selectedDomains.join(', ')
+        })
+      }).catch(() => {});
+    }
     navigate('/dashboard');
-  }, [formData, completeOnboarding, navigate]);
+  }, [formData, completeOnboarding, navigate, isAuthenticated]);
 
   if (generating) {
     return (

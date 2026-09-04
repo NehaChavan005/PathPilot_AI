@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.database.base import Base
 from app.models.skill import Skill, Prerequisite
-from backend.main import app
+from main import app
 from fastapi.testclient import TestClient
 from app.database.connection import get_db
 import pytest

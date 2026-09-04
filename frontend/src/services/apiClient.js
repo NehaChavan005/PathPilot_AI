@@ -1,11 +1,14 @@
 import { API_BASE_URL } from '../utils/constants';
 
-// A lightweight wrapper around fetch for standardized API calls
 export const apiClient = async (endpoint, options = {}) => {
+  const token = localStorage.getItem('pathpilot_token');
   const defaultHeaders = {
     'Content-Type': 'application/json',
-    // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Uncomment when adding real auth
   };
+
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -14,11 +17,15 @@ export const apiClient = async (endpoint, options = {}) => {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const error = new Error(errorData.detail || `API Error: ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
 
     return await response.json();
   } catch (error) {
+    if (error.status) throw error;
     console.error('API Client Error:', error);
     throw error;
   }

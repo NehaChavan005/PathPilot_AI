@@ -7,8 +7,10 @@ import './AuthForms.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const formRef = useRef(null);
 
@@ -17,10 +19,25 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login({ name: 'Omkar', email: formData.email });
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSwitchToRegister = (e) => {
@@ -40,7 +57,7 @@ const Login = () => {
           <Field 
             label="Email" 
             type="email" 
-            placeholder="omkar@example.com" 
+            placeholder="you@example.com" 
             required 
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -54,6 +71,10 @@ const Login = () => {
             onChange={(e) => setFormData({...formData, password: e.target.value})}
           />
         </div>
+
+        {error && (
+          <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '8px' }}>{error}</p>
+        )}
         
         <div className="auth-form-forgot">
           <a href="#" className="auth-form-link">Forgot password?</a>
@@ -62,8 +83,9 @@ const Login = () => {
         <button 
           type="submit" 
           className="auth-form-submit"
+          disabled={loading}
         >
-          Sign In
+          {loading ? 'Signing In...' : 'Sign In'}
         </button>
         
         <p className="auth-form-footer">

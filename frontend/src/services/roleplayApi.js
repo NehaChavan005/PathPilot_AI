@@ -1,19 +1,22 @@
-// Mock API for the AI Roleplay Simulator
-export const sendChatMessage = async (message, context = {}) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simple mock logic for demonstration
-      let responseText = "That's an interesting point. Could you elaborate on how you would implement that in Python using scikit-learn?";
-      
-      if (message.toLowerCase().includes("supervised")) {
-        responseText = "Great! You correctly identified that supervised learning uses labeled data. What is the main difference between regression and classification within supervised learning?";
-      }
+import { apiClient } from './apiClient';
 
-      resolve({
-        sender: 'ai',
-        text: responseText,
-        metricsUpdate: { accuracy: 88, communication: 90 }
-      });
-    }, 1200); // 1.2 second delay to simulate AI processing time
-  });
+export const sendChatMessage = async (message, context = {}) => {
+  try {
+    const data = await apiClient('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+
+    return {
+      sender: 'ai',
+      text: data.reply,
+      metricsUpdate: { accuracy: 88, communication: 90 }
+    };
+  } catch (error) {
+    return {
+      sender: 'ai',
+      text: 'Sorry, I encountered an error processing your message. Please try again.',
+      metricsUpdate: null
+    };
+  }
 };
