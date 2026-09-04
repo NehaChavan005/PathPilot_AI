@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+<<<<<<< HEAD
 
 import bcrypt
 from jose import JWTError, jwt
@@ -21,6 +22,27 @@ def verify_password(password: str, password_hash: str) -> bool:
         )
     except (ValueError, TypeError):
         return False
+=======
+
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+from app.config.settings import settings
+
+
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    return pwd_context.verify(password, password_hash)
+>>>>>>> origin/integration
 
 
 def create_access_token(
@@ -53,4 +75,8 @@ def decode_access_token(token: str) -> dict | None:
             algorithms=[settings.algorithm]
         )
     except JWTError:
+<<<<<<< HEAD
         return None
+=======
+        return None
+>>>>>>> origin/integration

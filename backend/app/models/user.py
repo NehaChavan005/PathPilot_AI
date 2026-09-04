@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.app.database.base import Base
+from app.database.base import Base
 
 
 class User(Base):
@@ -74,3 +74,5 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+
+

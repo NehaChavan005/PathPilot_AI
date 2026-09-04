@@ -75,7 +75,15 @@ export const apiClient = async (endpoint, options = {}) => {
   }
 
   let body = null;
-  const text = await response.text();
+
+  let text = '';
+  try {
+    text = await response.text();
+  } catch (error) {
+    // CORS / body-read network failure
+    throw new ApiError(0, 'Unable to reach the server. Please check your connection.');
+  }
+
   if (text) {
     try {
       body = JSON.parse(text);
@@ -85,11 +93,22 @@ export const apiClient = async (endpoint, options = {}) => {
   }
 
   if (!response.ok) {
-    const detail =
+    const status = response.status;
+    let detail =
       (body && (body.detail || body.message)) ||
       response.statusText ||
-      `Request failed (${response.status})`;
-    throw new ApiError(response.status, detail);
+      `Request failed (${status})`;
+
+    // Map common status codes to clear, actionable messages.
+    if (!(body && (body.detail || body.message))) {
+      if (status === 401) detail = 'Session expired. Please log in again.';
+      else if (status === 403) detail = 'You do not have permission to perform this action.';
+      else if (status === 404) detail = 'The requested resource was not found.';
+      else if (status === 422) detail = 'The request was invalid. Please check your input.';
+      else if (status === 500) detail = 'Server error. Please check the backend logs.';
+    }
+
+    throw new ApiError(status, detail);
   }
 
   return body;

@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy.orm import Session
 
-from backend.app.models.roadmap import LearningPath
+from app.models.roadmap import LearningPath
 
 
 def create_roadmap(
@@ -23,3 +23,5 @@ def create_roadmap(
     db.refresh(roadmap)
 
     return roadmap
+
+

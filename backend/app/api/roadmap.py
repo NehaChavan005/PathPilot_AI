@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+<<<<<<< HEAD
 from backend.app.ai.roadmap_generator import generate_personalized_roadmap
 from backend.app.database.connection import get_db
 from backend.app.models.certificate import Certificate
@@ -18,6 +19,14 @@ from backend.app.schemas.roadmap import RoadmapCreate, RoadmapRead
 from backend.app.ai.skill_extractor import extract_skills
 from backend.app.services.roadmap_service import create_roadmap
 from backend.app.utils.dependencies import current_user
+=======
+from app.database.connection import get_db
+from app.models.roadmap import LearningPath
+from app.models.user import User
+from app.schemas.roadmap import RoadmapCreate, RoadmapRead
+from app.services.roadmap_service import create_roadmap
+from app.utils.dependencies import current_user
+>>>>>>> origin/integration
 
 
 router = APIRouter(prefix="/roadmaps", tags=["roadmaps"])
@@ -83,6 +92,7 @@ def generate(payload: RoadmapGenerateRequest, user: User = Depends(current_user)
         result.get("steps", []),
     )
 
+<<<<<<< HEAD
     # Clear any existing phase progress for this roadmap
     db.query(PhaseProgress).filter_by(
         user_id=user.id, roadmap_id=roadmap.id
@@ -345,3 +355,8 @@ def generate_certificate(
         "issued_at": cert.issued_at.isoformat() if cert.issued_at else None,
         "message": "Congratulations! Your certificate has been generated.",
     }
+=======
+    return serialize(roadmap)
+
+
+>>>>>>> origin/integration

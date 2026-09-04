@@ -3,40 +3,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-# Ensure the repo root (F:\PathPilot_AI) is importable so the
-# ``backend.app`` package resolves regardless of the launch directory.
-BACKEND_DIR = Path(__file__).resolve().parent
-REPO_ROOT = BACKEND_DIR.parent
-
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from backend.app.config.settings import settings
-from backend.app.database.init_db import init_db
-from backend.app.api import (
-    assessment_router,
-    auth_router,
-    chat_router,
-    dashboard_router,
-    feedback_router,
-    profile_router,
-    progress_router,
-    recommendations_router,
-    roadmap_router,
-    skills_router,
-)
-from backend.app.api.ai import router as ai_router
+from backend.app.api.auth import router as auth_router
+from backend.app.api.profile import router as profile_router
 from backend.app.api.career import router as career_router
-from backend.app.api.roleplay import router as roleplay_router
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Create all database tables at startup before handling requests.
-    init_db()
-    yield
+from backend.app.api.skills import router as skills_router
+from backend.app.api.progress import router as progress_router
 
 
 app = FastAPI(
@@ -46,42 +18,34 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app.include_router(
+    auth_router,
+    prefix="/api"
 )
 
-routers = [
-    auth_router,
+app.include_router(
     profile_router,
+    prefix="/api"
+)
+
+app.include_router(
     career_router,
+    prefix="/api"
+)
+
+app.include_router(
     skills_router,
+    prefix="/api"
+)
+
+app.include_router(
     progress_router,
-    recommendations_router,
-    roadmap_router,
-    assessment_router,
-    ai_router,
-    chat_router,
-    dashboard_router,
-    feedback_router,
-    roleplay_router,
-]
-
-for router in routers:
-    app.include_router(router, prefix="/api")
-
-
-@app.get("/")
-def root():
-    return {
-        "message": "PathPilot AI backend is running",
-        "status": "ok",
-    }
+    prefix="/api"
+)
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "message": "PathPilot AI backend is running"
+    }

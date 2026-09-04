@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 from typing import Any
 from backend.app.ai.embeddings import semantic_similarity, tokenize_embedding
 from backend.app.ai.skill_extractor import canonicalize_skill, extract_skills
+=======
+from app.ai.embeddings import tokenize_embedding
+>>>>>>> origin/integration
 
 
 def similarity(query: str, content: str) -> float:
@@ -9,6 +13,7 @@ def similarity(query: str, content: str) -> float:
         return 0.0
     dense_sim = semantic_similarity(query, content)
     left, right = tokenize_embedding(query), tokenize_embedding(content)
+<<<<<<< HEAD
     jaccard = len(left & right) / len(left | right) if (left or right) else 0.0
     return round(0.7 * dense_sim + 0.3 * jaccard, 3)
 
@@ -67,3 +72,8 @@ def compute_content_score(
         "covered_skills": covered_gaps,
         "course_skills": course_skills,
     }
+=======
+    return len(left & right) / len(left | right) if left or right else 0.0
+
+
+>>>>>>> origin/integration

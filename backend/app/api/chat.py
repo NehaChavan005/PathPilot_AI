@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+<<<<<<< HEAD
 from sqlalchemy.orm import Session
 
 from backend.app.ai.chat_service import answer
@@ -10,6 +11,11 @@ from backend.app.models.progress import Enrollment, Progress
 from backend.app.models.user import User
 from backend.app.schemas.ai import ChatContextRequest, ChatResponse
 from backend.app.utils.dependencies import current_user
+=======
+from app.ai.chat_service import answer
+from app.models.user import User
+from app.utils.dependencies import current_user
+>>>>>>> origin/integration
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -27,6 +33,7 @@ def chat(
     if profile and profile.interests:
         current_skills = extract_skills(profile.interests)
 
+<<<<<<< HEAD
     gap_analysis = assess_skill_gaps(
         current_skills=current_skills,
         target_role=target_role,
@@ -53,3 +60,10 @@ def chat(
 
     reply = answer(payload.message, user.full_name, learner_context=learner_context)
     return {"reply": reply}
+=======
+@router.post("")
+def chat(payload: ChatRequest, user: User = Depends(current_user)):
+    return {"reply": answer(payload.message, user.full_name)}
+
+
+>>>>>>> origin/integration

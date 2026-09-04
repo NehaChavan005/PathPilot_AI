@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
+<<<<<<< HEAD
 from sqlalchemy.orm import Session
 
 from backend.app.database.connection import get_db
@@ -7,6 +8,9 @@ from backend.app.models.user import User
 from backend.app.schemas.feedback import FeedbackCreate, FeedbackRead
 from backend.app.services.feedback_service import get_feedback_for_user, submit_feedback
 from backend.app.utils.dependencies import current_user
+=======
+from app.services.feedback_service import feedback_received
+>>>>>>> origin/integration
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -16,6 +20,7 @@ def list_feedback(user: User = Depends(current_user), db: Session = Depends(get_
     return get_feedback_for_user(db, user.id)
 
 
+<<<<<<< HEAD
 @router.post("", response_model=FeedbackRead, status_code=status.HTTP_201_CREATED)
 def submit(payload: FeedbackCreate, user: User = Depends(current_user), db: Session = Depends(get_db)):
     return submit_feedback(
@@ -25,3 +30,10 @@ def submit(payload: FeedbackCreate, user: User = Depends(current_user), db: Sess
         course_id=payload.course_id,
         message=payload.message,
     )
+=======
+@router.post("")
+def submit_feedback(payload: FeedbackRequest):
+    return feedback_received(payload.message)
+
+
+>>>>>>> origin/integration

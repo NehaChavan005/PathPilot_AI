@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.app.database.base import Base
+from app.database.base import Base
 
 
 class Course(Base):
@@ -100,3 +100,5 @@ class CourseSkill(Base):
         "Skill",
         back_populates="course_skills",
     )
+
+

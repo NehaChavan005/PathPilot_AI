@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from backend.app.database.connection import get_db
-from backend.app.models.user import User
-from backend.app.schemas.progress import (
+from app.database.connection import get_db
+from app.models.user import User
+from app.schemas.progress import (
     CourseProgressRead,
     ProgressCreate,
     ProgressHistoryItem,
@@ -11,8 +11,8 @@ from backend.app.schemas.progress import (
     ProgressSummary,
     SkillProgress,
 )
-from backend.app.services import progress_service
-from backend.app.utils.dependencies import current_user
+from app.services import progress_service
+from app.utils.dependencies import current_user
 
 router = APIRouter(prefix="/progress", tags=["progress"])
 
@@ -72,3 +72,5 @@ def get_course_progress(
     db: Session = Depends(get_db),
 ):
     return progress_service.get_course_progress(db, user.id, course_id)
+
+

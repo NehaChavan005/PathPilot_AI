@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.app.database.base import Base
+from app.database.base import Base
 
 
 class Assessment(Base):
@@ -68,3 +68,5 @@ class AssessmentResult(Base):
     )
 
     assessment = relationship("Assessment")
+
+

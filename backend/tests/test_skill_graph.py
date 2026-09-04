@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.app.database.base import Base
-from backend.app.models.skill import Skill, Prerequisite
+from app.database.base import Base
+from app.models.skill import Skill, Prerequisite
 from backend.main import app
 from fastapi.testclient import TestClient
-from backend.app.database.connection import get_db
+from app.database.connection import get_db
 import pytest
 
 TEST_DB_URL = "sqlite:///./test_skill_graph.db"

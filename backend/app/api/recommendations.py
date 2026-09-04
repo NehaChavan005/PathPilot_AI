@@ -2,6 +2,7 @@ import json
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+<<<<<<< HEAD
 
 from backend.app.database.connection import get_db
 from backend.app.models.course import Course
@@ -18,6 +19,13 @@ from backend.app.schemas.recommendation import RecommendationRead
 from backend.app.ai.skill_extractor import assess_skill_gaps, extract_skills
 from backend.app.services.recommendation_service import recommendations_for_user
 from backend.app.utils.dependencies import current_user
+=======
+from app.database.connection import get_db
+from app.models.user import User
+from app.schemas.recommendation import RecommendationRead
+from app.services.recommendation_service import recommendations_for_user
+from app.utils.dependencies import current_user
+>>>>>>> origin/integration
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
@@ -27,6 +35,7 @@ def get_recommendations(user: User = Depends(current_user), db: Session = Depend
     return recommendations_for_user(db, user.id)
 
 
+<<<<<<< HEAD
 @router.post("/generate", response_model=list[DetailedRecommendationRead])
 def generate_recommendations(
     payload: RecommendationGenerateRequest,
@@ -79,3 +88,5 @@ def generate_recommendations(
     )
 
     return results
+=======
+>>>>>>> origin/integration
