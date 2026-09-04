@@ -1,0 +1,183 @@
+:root {
+  --auth-input-bg: #f8fafc;
+  --auth-input-border: #e2e8f0;
+  --auth-input-focus: #6366f1;
+  --auth-input-focus-ring: rgba(99, 102, 241, 0.15);
+  --auth-btn-bg: #6366f1;
+  --auth-btn-hover: #4f46e5;
+  --auth-btn-shadow: rgba(99, 102, 241, 0.4);
+  --auth-text-primary: #0f172a;
+  --auth-text-secondary: #64748b;
+  --auth-link: #6366f1;
+  --auth-link-hover: #4f46e5;
+}
+
+.auth-form {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.auth-form.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-form {
+    transition: opacity 300ms ease, transform 300ms ease;
+  }
+  .auth-form.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.auth-form-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--auth-text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.auth-form-subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--auth-text-secondary);
+}
+
+.auth-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-form-forgot {
+  text-align: right;
+  margin-bottom: 0.5rem;
+}
+
+.auth-form-forgot .auth-form-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.auth-form-fields > div {
+  animation: fieldStagger 500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.auth-form-fields > div:nth-child(1) { animation-delay: 100ms; }
+.auth-form-fields > div:nth-child(2) { animation-delay: 200ms; }
+.auth-form-fields > div:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes fieldStagger {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-form-fields > div {
+    animation: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-form-submit {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin-top: 0.5rem;
+  background: var(--auth-btn-bg);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 16px var(--auth-btn-shadow);
+  will-change: transform, box-shadow, background-color;
+}
+
+.auth-form-submit:hover {
+  background: var(--auth-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--auth-btn-shadow);
+}
+
+.auth-form-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--auth-btn-shadow);
+}
+
+.auth-form-submit:focus-visible {
+  outline: 2px solid var(--auth-btn-bg);
+  outline-offset: 2px;
+}
+
+.auth-form-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--auth-text-secondary);
+}
+
+.auth-form-link {
+  color: var(--auth-link);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.auth-form-link:hover {
+  color: var(--auth-link-hover);
+  text-decoration: underline;
+}
+
+.auth-form-link:focus-visible {
+  outline: 2px solid var(--auth-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.auth-form-wrapper {
+  transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1), transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-form-wrapper.slide-out {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+.auth-form-wrapper.slide-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.auth-form-card.transitioning {
+  box-shadow: 0 25px 60px -18px rgba(255, 138, 61, 0.22), 0 8px 24px rgba(37, 34, 92, 0.10);
+  border-color: rgba(255, 138, 61, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-form-wrapper {
+    transition: none;
+  }
+  .auth-form-wrapper.slide-out {
+    opacity: 1;
+    transform: none;
+  }
+  .auth-form-card.transitioning {
+    box-shadow: var(--auth-shadow);
+    border-color: var(--auth-border);
+  }
+}
