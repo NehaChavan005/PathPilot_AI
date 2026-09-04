@@ -27,6 +27,10 @@ htmlcov/
 .vscode/
 .idea/
 
+# Node.js
+node_modules/
+dist/
+
 # OS files
 .DS_Store
 Thumbs.db
